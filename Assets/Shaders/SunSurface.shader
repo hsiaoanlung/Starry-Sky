@@ -5,9 +5,9 @@ Shader "StarrySky/SunSurface"
 {
     Properties
     {
-        [HDR] _HotColor   ("亮部顏色", Color) = (4.0, 3.2, 1.6, 1)
-        [HDR] _CoolColor  ("暗部顏色", Color) = (1.6, 0.45, 0.08, 1)
-        [HDR] _LimbColor  ("邊緣顏色", Color) = (1.2, 0.25, 0.03, 1)
+        [HDR] _HotColor   ("亮部顏色", Color) = (1.5, 1.1, 0.5, 1)
+        [HDR] _CoolColor  ("暗部顏色", Color) = (0.9, 0.28, 0.04, 1)
+        [HDR] _LimbColor  ("邊緣顏色", Color) = (0.6, 0.12, 0.02, 1)
         _NoiseScale       ("電漿細節大小", Float) = 3.0
         _WarpStrength     ("扭曲強度", Float) = 1.2
         _FlowSpeed        ("流動速度", Float) = 0.15

@@ -12,17 +12,19 @@ public class SunVisual : MonoBehaviour
     [Tooltip("日冕 Quad 的半徑，以太陽半徑為單位。4 = 日冕延伸到 4 倍太陽半徑")]
     public float coronaSize = 4f;
     [Tooltip("日冕整體亮度")]
-    public float coronaIntensity = 1f;
+    public float coronaIntensity = 0.8f;
 
     [Header("Bloom（只在 URP 下有效）")]
     public bool addBloom = true;
     public float bloomThreshold = 1f;
-    public float bloomIntensity = 1.5f;
-    [Range(0f, 1f)] public float bloomScatter = 0.7f;
+    public float bloomIntensity = 1f;
+    [Range(0f, 1f)] public float bloomScatter = 0.6f;
 
     Transform corona;
     Material coronaMaterial;
     Camera cam;
+    Volume bloomVolume;   // URP 下才會建立
+    Bloom bloom;
 
     void Start()
     {
@@ -55,19 +57,37 @@ public class SunVisual : MonoBehaviour
         quadRenderer.shadowCastingMode = ShadowCastingMode.Off;
         quadRenderer.receiveShadows = false;
 
-        if (addBloom) SetupBloom();
+        SetupBloom();
     }
+
+    static readonly int SunPosId = Shader.PropertyToID("_StarrySkySunPos");
 
     void LateUpdate()
     {
+        // 讓行星 Shader（例如 StarrySky/Earth）知道太陽在哪，光從太陽照過去；w = 1 表示有效
+        Vector3 p = transform.position;
+        Shader.SetGlobalVector(SunPosId, new Vector4(p.x, p.y, p.z, 1f));
+
         if (corona == null || cam == null) return;
         corona.rotation = cam.transform.rotation;   // Billboard：永遠正對相機
         corona.localScale = Vector3.one * coronaSize;
         coronaMaterial.SetFloat("_CoronaSize", coronaSize);
         coronaMaterial.SetFloat("_Intensity", coronaIntensity);
+
+        // 每幀套用 Inspector 的數值，Play 中調整會立刻看到
+        if (bloomVolume != null)
+        {
+            bloomVolume.enabled = addBloom;
+            bloom.threshold.value = bloomThreshold;
+            bloom.intensity.value = bloomIntensity;
+            bloom.scatter.value = bloomScatter;
+        }
     }
 
-    /// <summary>建立全域 Volume 並加上 Bloom，讓 HDR 亮度超過 threshold 的部分發光。</summary>
+    // 太陽消失後，行星 Shader 改回用材質上的預覽光線方向
+    void OnDisable() => Shader.SetGlobalVector(SunPosId, Vector4.zero);
+
+    /// <summary>建立全域 Volume 並加上 Bloom，讓 HDR 亮度超過 threshold 的部分發光。數值與開關由 LateUpdate 每幀套用。</summary>
     void SetupBloom()
     {
         if (!(GraphicsSettings.currentRenderPipeline is UniversalRenderPipelineAsset))
@@ -80,13 +100,10 @@ public class SunVisual : MonoBehaviour
         if (cam != null) cam.GetUniversalAdditionalCameraData().renderPostProcessing = true;
 
         var profile = ScriptableObject.CreateInstance<VolumeProfile>();
-        var bloom = profile.Add<Bloom>(true);
-        bloom.threshold.Override(bloomThreshold);
-        bloom.intensity.Override(bloomIntensity);
-        bloom.scatter.Override(bloomScatter);
+        bloom = profile.Add<Bloom>(true);   // true：所有參數都勾選 Override
 
-        var volume = new GameObject("Sun Bloom Volume").AddComponent<Volume>();
-        volume.isGlobal = true;
-        volume.sharedProfile = profile;
+        bloomVolume = new GameObject("Sun Bloom Volume").AddComponent<Volume>();
+        bloomVolume.isGlobal = true;
+        bloomVolume.sharedProfile = profile;
     }
 }

@@ -5,8 +5,8 @@ Shader "StarrySky/SunCorona"
 {
     Properties
     {
-        [HDR] _InnerColor ("內圈顏色", Color) = (3.0, 2.2, 1.0, 1)
-        [HDR] _OuterColor ("外圈顏色", Color) = (1.2, 0.3, 0.05, 1)
+        [HDR] _InnerColor ("內圈顏色", Color) = (1.2, 0.8, 0.35, 1)
+        [HDR] _OuterColor ("外圈顏色", Color) = (0.6, 0.15, 0.03, 1)
         _CoronaSize       ("Quad 半徑（以太陽半徑為單位）", Float) = 4.0
         _Falloff          ("衰減速度", Float) = 2.2
         _RayFrequency     ("光芒數量", Float) = 6.0
