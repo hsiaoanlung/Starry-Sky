@@ -16,6 +16,10 @@ public class SolarSystemBuilder : MonoBehaviour
 
     [System.NonSerialized] public PlanetSpec[] planets;   // 執行時由 CSV 載入
 
+    [Header("外觀")]
+    [Tooltip("太陽使用電漿表面與日冕效果（SunVisual）")]
+    public bool sunVisual = true;
+
     [Header("軌跡")]
     public bool addTrails = true;
 
@@ -48,6 +52,7 @@ public class SolarSystemBuilder : MonoBehaviour
             {
                 // 沒有 parent（太陽）：放在原點靜止
                 created[p.name] = Create(p, Vec3d.zero, Vec3d.zero, null, 0);   // 不畫軌跡
+                if (sunVisual) created[p.name].gameObject.AddComponent<SunVisual>();   // 電漿表面 + 日冕
                 continue;
             }
 
