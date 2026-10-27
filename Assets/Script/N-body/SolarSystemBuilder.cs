@@ -23,6 +23,12 @@ public class SolarSystemBuilder : MonoBehaviour
     [Tooltip("太陽沒有 Prefab（prefab 欄空白、讀不到或 Use Prefabs 關閉）時，程式產生的球是否加上 SunVisual（電漿表面 + 日冕）")]
     public bool sunVisual = true;
 
+    [Tooltip("黑色太空背景、關掉 Directional Light（SpaceEnvironment）")]
+    public bool spaceEnvironment = true;
+
+    [Tooltip("沒有 Prefab 的天體（衛星）用的材質，光從太陽來。留空 = 讀 Resources/Materials/SimpleBody")]
+    public Material plainBodyMaterial;
+
     [Header("自轉")]
     [Tooltip("依 CSV 的 rotationPeriod 欄讓天體自轉（BodySpin）。Play 中可即時開關")]
     public bool addSpin = true;
@@ -43,6 +49,8 @@ public class SolarSystemBuilder : MonoBehaviour
     void Awake()
     {
         if (simulator == null) simulator = GetComponent<NBodySimulator>();
+        if (spaceEnvironment) gameObject.AddComponent<SpaceEnvironment>();   // 黑色背景 + 關掉 Directional Light
+        if (plainBodyMaterial == null) plainBodyMaterial = Resources.Load<Material>("Materials/SimpleBody");
 
         if (planetTable == null) planetTable = Resources.Load<TextAsset>("Planets");
         if (planetTable == null)
@@ -129,7 +137,9 @@ public class SolarSystemBuilder : MonoBehaviour
         {
             go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             Destroy(go.GetComponent<Collider>());        // 不需要碰撞
-            go.GetComponent<Renderer>().material.color = color;
+            var r = go.GetComponent<Renderer>();
+            if (plainBodyMaterial != null) r.material = new Material(plainBodyMaterial);   // 每顆一份，顏色才能各自不同
+            r.material.color = color;                    // SimpleBody 的顏色屬性叫 _Color，material.color 就是它
         }
         go.name = name;
         go.transform.localScale = Vector3.one * radius * 2f;   // Prefab 的子物件（日冕、土星環）跟著等比例縮放

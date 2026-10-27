@@ -2,7 +2,7 @@
 
 最後更新：2026-10-27
 
-這份文件從零開始介紹太陽效果用到的觀念：渲染管線、材質與 Shader、HDR 與 Bloom、Shader 程式的結構、噪聲，以及日冕用到的 billboard、混合模式和 ray marching（體積渲染）。
+這份文件從零開始介紹太陽效果用到的觀念：渲染管線、材質與 Shader、HDR 與 Bloom、Shader 程式的結構、噪聲，日冕用到的 billboard、混合模式和 ray marching（體積渲染），以及光從太陽來的光照方法。
 太陽效果本身的參數與實作細節請看 [太陽視覺效果說明.md](太陽視覺效果說明.md)。
 
 ---
@@ -358,7 +358,71 @@ t = −b ± √(b² − (c − R²))
 
 ---
 
-## 7. 自己動手試試
+## 7. 光照：光從太陽來
+
+### 7.1 平行光與點光源
+| 種類 | 光的方向 | Unity 元件 | 適合 |
+| --- | --- | --- | --- |
+| 平行光 | 整個場景同一個方向 | Directional Light | 地面上看太陽（太陽很遠，光幾乎平行） |
+| 點光源 | 從一個點往四面八方 | Point Light | 燈泡、火把、**太陽系的太陽** |
+
+太陽在畫面中央、行星繞著它轉，所以要用點光源的想法：每個像素的光方向 = `normalize(太陽位置 − 像素位置)`。
+
+### 7.2 自己算光，不用 Unity 的光源
+我們的 Shader 沒有 `LightMode` 標籤（4.4 節），收不到 URP 的光源。所以改成：
+
+1. `SunVisual` 每幀呼叫 `Shader.SetGlobalVector("_StarrySkySunPos", 太陽位置)`。**全域變數**：所有 Shader 都讀得到，不用一個一個材質設定。
+2. 每支 Shader 都 `#include "PlanetLighting.cginc"`，用 `StarrySkyLightDir(worldPos)` 拿光的方向。
+
+好處是公式完全自己決定，例如不想要 URP Point Light 的 1/d² 衰減（海王星會全黑），就不要加。
+
+### 7.3 Lambert 漫反射
+最基本的光照模型：
+
+```hlsl
+float lit = saturate(dot(N, L));        // N：表面法線，L：指向光源，都是單位向量
+float3 col = albedo * (lit + ambient);
+```
+
+| 位置 | N·L | 亮度 |
+| --- | --- | --- |
+| 正對光源 | 1 | 最亮 |
+| 斜 60° | 0.5 | 一半 |
+| 側面（晨昏線） | 0 | 暗 |
+| 背面 | 負數 → `saturate` 夾成 0 | 只剩 ambient |
+
+`dot` 就是兩個向量夾角的 cos，所以斜著照時光被「攤開」到比較大的面積上，每一點分到的光就少了。
+`StarrySky/SimpleBody`（衛星）只有這個公式；`Planet.shader`、`Earth.shader` 在這之上再加凹凸、大氣、夜燈。
+
+### 7.4 法線要轉到世界空間
+`UnityObjectToWorldNormal(v.normal)` 把網格的法線轉到世界空間，才能和世界空間的光方向做 `dot`。
+物件旋轉（自轉、傾角）時法線跟著轉，所以自轉的行星，亮面還是永遠朝向太陽。
+
+### 7.5 背景與環境光
+| 設定 | 位置 | 本專案 |
+| --- | --- | --- |
+| Clear Flags / Background Type | Camera 元件 | Solid Color 黑色（`SpaceEnvironment` 在 Play 時設定） |
+| Skybox Material | Lighting 視窗 > Environment | None |
+| Ambient（環境光） | Lighting 視窗 > Environment | Flat、接近黑 |
+
+環境光是沒有方向、從四面八方來的光，只有 Unity 內建的 Lit 材質會用；StarrySky Shader 用自己的 `_Ambient`。
+
+### 7.6 天空盒（Skybox）
+天空盒是包住相機、跟著相機移動的大方塊，最先畫（Queue = Background）、不寫深度。
+因為它跟著相機走，看起來就像**無限遠**：只有轉頭時會變，走到哪裡都一樣，正好拿來畫星空。
+
+| 寫天空盒 Shader 要注意 | 原因 |
+| --- | --- |
+| `Tags { "Queue" = "Background" "RenderType" = "Background" "PreviewType" = "Skybox" }` | 最先畫；材質預覽顯示成天空 |
+| `Cull Off`、`ZWrite Off` | 相機在方塊裡面看；不能擋住任何東西 |
+| 方向 = `v.vertex.xyz` | 天空盒網格以相機為中心，頂點位置就是方向 |
+| 指定方式 | `RenderSettings.skybox = 材質`，相機的 Clear Flags（URP：Background Type）設成 Skybox |
+
+`StarrySky/Starfield` 的星星是依方向用 hash 撒在立方體格子上的，細節見 [星空說明.md](星空說明.md)。
+
+---
+
+## 8. 自己動手試試
 
 1. Play 後選 **Sun**，展開材質，拖動「扭曲強度」：0 是普通雲，越大越捲曲。
 2. 把太陽材質三個顏色的 Intensity 都調到 0（亮度 ≤ 1），表面的溢光就消失（日冕仍是 HDR，所以外圈還會發光）——驗證 HDR 和 Bloom 的關係。
@@ -368,13 +432,18 @@ t = −b ± √(b² − (c − R²))
    用這種方式單獨輸出某個中間值，是 Shader 除錯最常用的方法。
 6. 雙擊 `Sun.prefab` 進 Prefab 模式，把視角轉到側面、再把鏡頭推進日冕裡面：體積版從任何角度都正常（6.6、6.7 節）。
    把 Shader 的 `Cull Front` 改成 `Cull Back`，再推進去一次，看看會發生什麼事。
+7. 在 `SimpleBody.shader` 的 frag 把 `saturate(dot(N, L))` 改成 `dot(N, L) * 0.5 + 0.5`（叫 *half-Lambert*，Valve 在《戰慄時空 2》用過）：
+   背光面不再全黑，而是柔和的漸層。比較一下哪個比較像太空中的衛星。
+8. Play 中選 Simulator > SpaceEnvironment，關掉 Starfield 並把 Background Color 改成深藍，或取消 Disable Directional Lights：行星與衛星的亮面方向都不會變，因為它們只看太陽的位置（7.2 節）。
+9. 選 Earth → 從星球看出去，記住背景某顆亮星的位置；再選 Neptune（視角不變）並轉到同一個方向：星空完全一樣（7.6 節「無限遠」）。
+   再把 `Starfield.mat` 的「星星大小」改成 0.3，轉動鏡頭看星星一閃一閃的樣子（像素取樣不足，aliasing）。
 
 > 注意：Play 中在 Inspector 改的材質數值，停止 Play 後會還原（改的是執行時複製出來的材質）。
 > 在 Prefab 模式直接改 `Sun.mat`、`SunCorona.mat` 才會存下來。
 
 ---
 
-## 8. 延伸閱讀關鍵字
+## 9. 延伸閱讀關鍵字
 
 - Unity 手冊：*ShaderLab*、*Writing vertex and fragment shaders*
 - URP 手冊：*Volumes*、*Bloom*、*Writing custom shaders in URP*
