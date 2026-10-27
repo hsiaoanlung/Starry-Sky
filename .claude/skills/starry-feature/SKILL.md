@@ -15,7 +15,7 @@ description: Starry Sky（Unity 太陽系 N-body 專案）新增或修改功能�
 1. 讀 `Assets/Docs/專案結構.md`：目錄、執行流程、腳本職責、待辦、修改紀錄。
 2. 讀和這次功能相關的程式與說明文件（`Assets/Docs/*.md`）。
 3. 看 `git status`，知道哪些東西還沒 commit。
-4. 注意 `專案結構.md` 第 10 節的待辦與已知問題，新功能可能會碰到（例如 URP 設定）。
+4. 注意 `專案結構.md` 第 11 節的待辦與已知問題，新功能可能會碰到（例如 URP 設定）。
 
 ## 步驟 1：提出方案，先問再做
 
@@ -73,9 +73,10 @@ Claude 不能打開 Unity，所以要盡量在外面確認，並**誠實說明�
 2. **出現新觀念時寫教學**（像 `Shader與URP入門教學.md`）：從零開始講，有範例程式片段、內建函式表，最後附「自己動手試試」的小實驗。已有的教學就補充進去，不要重複寫。
 3. **更新 `專案結構.md`**：
    - 「最後更新」日期
-   - 第 2 節目錄樹（新檔案、新資料夾）
-   - 第 4 節執行流程、第 5 節腳本職責（如果有新元件）
-   - 第 9 節驗證狀態、第 10 節待辦
+   - 第 2 節功能與文件索引（新功能、新文件）
+   - 第 3 節目錄樹（新檔案、新資料夾）
+   - 第 5 節執行流程、第 6 節腳本職責（如果有新元件）
+   - 第 10 節驗證狀態、第 11 節待辦
    - 最後的「YYYY-MM-DD 修改紀錄」（同一天就加在同一節，用編號）
 4. 文件裡的數值要跟程式一致；改了預設值就同步改文件。
 
@@ -94,6 +95,9 @@ Claude 不能打開 Unity，所以要盡量在外面確認，並**誠實說明�
 | --- | --- | --- |
 | 太陽電漿 + 日冕 + Bloom | `SunVisual.cs`、`SunSurface.shader`、`SunCorona.shader` | `太陽視覺效果說明.md` |
 | 太陽 Prefab + 體積日冕 | `Sun.prefab`、`SunCorona.shader`（ray marching）、`sun_corona_preview.py` | `太陽Prefab說明.md` |
+| 星空天空盒 | `Starfield.shader`、`starfield_preview.py` | `星空說明.md` |
+| 視角切換（軌道相機） | `CameraFocus.cs` | `視角切換說明.md` |
+| 黑色背景 + 衛星從太陽受光 | `SpaceEnvironment.cs`、`SimpleBody.shader` | `太空環境與光照說明.md` |
 | 自轉 | `BodySpin.cs`（模擬時間 + 上限） | `自轉說明.md` |
 | CSV 指定 Prefab | `PlanetSpec.cs`、`SolarSystemBuilder.LoadPrefab()` | `Prefab載入說明.md` |
 | 地球 Prefab | `Earth.shader`、`earth_texture_gen.py` | `地球Prefab說明.md` |
