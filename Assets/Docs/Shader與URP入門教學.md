@@ -1,8 +1,8 @@
 # Shader 與 URP 入門教學
 
-最後更新：2026-10-26
+最後更新：2026-10-27
 
-這份文件從零開始介紹太陽效果用到的觀念：渲染管線、材質與 Shader、HDR 與 Bloom、Shader 程式的結構、噪聲，以及日冕用到的 billboard 和混合模式。
+這份文件從零開始介紹太陽效果用到的觀念：渲染管線、材質與 Shader、HDR 與 Bloom、Shader 程式的結構、噪聲，以及日冕用到的 billboard、混合模式和 ray marching（體積渲染）。
 太陽效果本身的參數與實作細節請看 [太陽視覺效果說明.md](太陽視覺效果說明.md)。
 
 ---
@@ -265,10 +265,14 @@ n    = fbm(p + 強度 × warp)
 
 ## 6. 日冕用到的技巧
 
+> 2026-10-27 起日冕改成體積版（6.6 節）。6.1、6.2 是舊版 Quad 日冕用的技巧，仍然常用，留著當觀念介紹。
+
 ### 6.1 Billboard（看板）
 一張平面永遠轉向相機，從哪個角度看都是正面。常用在粒子、光暈、遠處的樹。
-`SunVisual.LateUpdate()` 每幀做 `corona.rotation = cam.transform.rotation`。
-放在 `LateUpdate` 是因為相機在 `CameraFocus.LateUpdate` 才移動完；即使順序剛好相反，相機是平移、轉向不變，所以不會有問題。
+舊版的 `SunVisual.LateUpdate()` 每幀做 `corona.rotation = cam.transform.rotation`。
+
+**缺點**：它本質上還是一張平面。俯視時看不出來，但從側面、斜角看，或相機靠近穿過那張平面時，
+「沒有厚度」的感覺就會露出來。這就是日冕改成體積版的原因。
 
 ### 6.2 極座標
 日冕是從中心往外放射的，用「角度 + 半徑」思考比用 x、y 方便：
@@ -300,19 +304,73 @@ GPU 為每個像素記錄「目前最近的物體有多遠」。
 
 日冕用 Additive：黑色 = 加 0 = 完全透明，所以 frag 只要回傳「要加多少光」，不必處理 alpha。
 
+### 6.6 Ray marching（體積渲染）
+一般的 Shader 只畫「物體表面」上的一點。但日冕、雲、霧是**有厚度的氣體**，一個像素看到的是整條視線穿過的所有氣體加起來。
+Ray marching 就是在 frag 裡自己沿著視線一步一步走，把每一步的量累加起來：
+
+```hlsl
+float3 ro = 相機位置;                       // ray origin
+float3 rd = normalize(像素位置 - ro);        // ray direction
+float3 sum = 0;
+for (int k = 0; k < STEPS; k++)
+{
+    float3 p = ro + rd * (t0 + k * ds);     // 光線上的第 k 點
+    sum += emission(p) * ds;                // 這一小段發出的光
+}
+return float4(sum, 1);
+```
+
+要決定的事有四件：
+
+**1. 從哪裡走到哪裡 —— 光線和球相交**
+把光線 `p = ro + rd·t` 代入球面 `|p|² = R²`（`rd` 是單位向量）：
+
+```
+t² + 2bt + (c − R²) = 0,   b = ro·rd,  c = ro·ro
+t = −b ± √(b² − (c − R²))
+```
+
+判別式 `< 0` 代表沒碰到球；兩個解是進入、離開的位置。這個「射線 × 球」公式在光線追蹤、點擊判定都會一直用到。
+
+**2. 在哪個座標系算**
+`unity_WorldToObject` 把相機位置換到物件空間，再乘上比例換成「太陽半徑」單位，這樣公式裡的 `r = 1` 永遠是太陽表面，跟太陽在畫面上多大無關。
+
+**3. 太細的東西不要用取樣**
+步距大約 0.25 個太陽半徑，比它還薄的結構（表面亮環約 0.06）會被跳過、一閃一閃。
+這種時候改用公式直接算：光線離球心最近的距離 `√(c − b²)`。原則是**能用公式算的就不要取樣**。
+
+**4. 抖動（dither）去條紋**
+每個像素都從同樣的位置開始取樣，會出現一圈一圈的條紋（banding）。
+起點加上一個依像素座標算出的隨機偏移 `(k + jitter) * ds`，條紋就變成看不出來的細雜訊。
+
+| 內建變數 / 函式 | 用途 |
+| --- | --- |
+| `_WorldSpaceCameraPos` | 相機的世界座標 |
+| `unity_WorldToObject` | 世界 → 物件空間矩陣（`unity_ObjectToWorld` 的反矩陣） |
+| `SV_POSITION`（在 frag 裡） | 像素的螢幕座標，可拿來做 dither |
+| `[loop]` | 告訴編譯器不要展開迴圈（步數是變數時用） |
+| `frac(x)` | 取小數部分，用來做 0~1 循環的相位 |
+
+### 6.7 Cull（要畫哪一面）
+三角形有正面和背面。`Cull Back`（預設）只畫正面，`Cull Front` 只畫背面，`Cull Off` 兩面都畫。
+體積日冕用 **`Cull Front`**：相機在球裡面時，正面都朝外看不到，但背面一定在相機前方，所以進到日冕裡也看得到；
+而且太陽圓盤後面的背面會被深度測試擋掉，不會在太陽表面上又疊一層光。
+
 ---
 
 ## 7. 自己動手試試
 
 1. Play 後選 **Sun**，展開材質，拖動「扭曲強度」：0 是普通雲，越大越捲曲。
 2. 把太陽材質三個顏色的 Intensity 都調到 0（亮度 ≤ 1），表面的溢光就消失（日冕仍是 HDR，所以外圈還會發光）——驗證 HDR 和 Bloom 的關係。
-3. 選 **Sun > Corona**，改「光芒數量」和「光芒銳利度」。
+3. 選 **Sun > Corona**，改「光芒數量」和「光芒銳利度」。把「取樣步數」降到 8，看看條紋（banding）和抖動的效果；再把 frag 裡的 `jitter` 改成 0 比較。
 4. 選 `Sun Bloom Volume`，把 Bloom 的 Threshold 調低到 0.5，連行星也開始溢光。
-5. 在 `SunCorona.shader` 的 `frag` 最後改成 `return float4(filaments, filaments, filaments, 1);`，只看光芒那一層長什麼樣子。
+5. 在 `SunCorona.shader` 的 `coronaEmission` 最後改成 `return filaments * glow;`，只看光芒那一層長什麼樣子。
    用這種方式單獨輸出某個中間值，是 Shader 除錯最常用的方法。
+6. 雙擊 `Sun.prefab` 進 Prefab 模式，把視角轉到側面、再把鏡頭推進日冕裡面：體積版從任何角度都正常（6.6、6.7 節）。
+   把 Shader 的 `Cull Front` 改成 `Cull Back`，再推進去一次，看看會發生什麼事。
 
-> 注意：執行中在 Inspector 改的材質數值，停止 Play 後會還原（材質是執行時用 `new Material` 建立的）。
-> 調到滿意的數值後，要記下來改到 Shader 的 Properties 預設值裡。
+> 注意：Play 中在 Inspector 改的材質數值，停止 Play 後會還原（改的是執行時複製出來的材質）。
+> 在 Prefab 模式直接改 `Sun.mat`、`SunCorona.mat` 才會存下來。
 
 ---
 
@@ -321,4 +379,5 @@ GPU 為每個像素記錄「目前最近的物體有多遠」。
 - Unity 手冊：*ShaderLab*、*Writing vertex and fragment shaders*
 - URP 手冊：*Volumes*、*Bloom*、*Writing custom shaders in URP*
 - 噪聲：*The Book of Shaders*（noise、fBm 章節）、Inigo Quilez 的 *domain warping* 文章
+- 體積渲染：Inigo Quilez 的 *ray-sphere intersection*、*volumetric rendering*；關鍵字 *ray marching*、*participating media*
 - 進階：*Shader Graph*（URP 的視覺化 Shader 編輯器，不用寫程式）

@@ -3,7 +3,7 @@
 最後更新：2026-10-26
 
 一顆有程序化貼圖的地球：白天地表、海面反光、會飄的雲、夜晚城市燈光、大氣藍色邊緣。
-目前**只做成 Prefab 試看效果**，還沒有接到 N-body 模擬裡（模擬中的地球仍是 `SolarSystemBuilder` 產生的藍色球）。
+2026-10-27 起已接進 N-body 模擬：`Planets.csv` 的 prefab 欄填 `Prefabs/Planets/Earth`，按 Play 時自動載入（見 [Prefab載入說明.md](Prefab載入說明.md)）。
 
 基礎觀念（Shader 結構、噪聲、fBm、domain warping）見 [Shader與URP入門教學.md](Shader與URP入門教學.md)。
 
@@ -13,7 +13,7 @@
 
 | 檔案 | 說明 |
 | --- | --- |
-| `Assets/Prefabs/Earth.prefab` | 一顆 Unity 內建球體 + `Earth` 材質，沒有 Collider |
+| `Assets/Resources/Prefabs/Planets/Earth.prefab` | 一顆 Unity 內建球體 + `Earth` 材質，沒有 Collider |
 | `Assets/Materials/Earth.mat` | 使用 `StarrySky/Earth` Shader，掛三張貼圖 |
 | `Assets/Shaders/Earth.shader` | 地球的光照與合成 |
 | `Assets/Textures/Earth/EarthAlbedo.png` | RGB = 地表顏色，**A = 海洋遮罩**（白 = 海） |
@@ -26,7 +26,7 @@
 ## 2. 怎麼看
 
 **方法一：Prefab 模式**
-在 Project 視窗雙擊 `Assets/Prefabs/Earth.prefab`。沒有太陽時，光線方向用材質上的「預覽用光線方向」。
+在 Project 視窗雙擊 `Assets/Resources/Prefabs/Planets/Earth.prefab`。沒有太陽時，光線方向用材質上的「預覽用光線方向」。
 
 **方法二：放進場景**
 把 Prefab 拖進任何場景，選 `Earth` 材質就能調整參數。
@@ -106,6 +106,6 @@ Unity 內建球體的 UV 剛好是這種排法，所以貼圖可以直接貼上�
 
 - 大陸是程序化產生的虛構地形，不是真實地圖。想要真實地球，可以換成 NASA *Blue Marble*（公有領域）的貼圖，Shader 不用改。
 - 沒有法線貼圖，地形沒有立體凹凸。
-- 地球沒有自轉；模擬播放速度很快時，自轉會快到看不清，需要另外設計。
+- 自轉：2026-10-27 起由 `BodySpin` 依 CSV 的 `rotationPeriod`（0.99727 天）轉，高速播放時有上限，見 [自轉說明.md](自轉說明.md)。雲仍會相對地表流動（`_CloudSpeed`）。
 - 大氣只是球體邊緣的 Fresnel 光，沒有延伸到球外。可以像日冕一樣加一層外殼。
-- 下一步：讓 `SolarSystemBuilder` 在建立 Earth 時改用這個 Prefab。
+- 讓 `SolarSystemBuilder` 在建立 Earth 時改用這個 Prefab：2026-10-27 已完成。

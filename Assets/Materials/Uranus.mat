@@ -30,7 +30,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _LimbDarkening: 0.6
-    - _RotationSpeed: 0.002
+    - _RotationSpeed: 0
     m_Colors:
     - _AtmosphereColor: {r: 0.35, g: 0.6, b: 0.7, a: 1}
   m_BuildTextureStacks: []

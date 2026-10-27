@@ -17,10 +17,14 @@ public class PlanetSpec
     public Color color;
     public float orbitScale;     // 顯示時把與 parent 的距離放大幾倍，純顯示用（月球需要，否則會被地球蓋住）
     public bool retrograde;      // 逆行：繞 parent 的方向與其他天體相反（例如海衛一 Triton）
+    public string prefab;        // Prefab 在 Resources 底下的路徑（不含副檔名），例如 Prefabs/Planets/Earth；空白 = 純色球
+    public double rotationPeriod; // 恆星自轉週期（天），純顯示用；正 = 繞自轉軸逆時針，負 = 反向，0 = 不自轉
 
     /// <summary>
-    /// 解析 CSV。第一列是標題：name,parent,mass,a,e,displayRadius,color,orbitScale,retrograde。
-    /// color 用 #RRGGBB；orbitScale 可省略（預設 1）；retrograde 可省略（預設 0，填 1 = 逆行）。空白列與 # 開頭的列會略過。分隔符號接受逗號或分號。
+    /// 解析 CSV。第一列是標題：name,parent,mass,a,e,displayRadius,color,orbitScale,retrograde,prefab,rotationPeriod。
+    /// color 用 #RRGGBB；orbitScale 可省略（預設 1）；retrograde 可省略（預設 0，填 1 = 逆行）；prefab 可省略（空白 = 純色球）；
+    /// rotationPeriod 可省略（預設 0 = 不自轉）。
+    /// 空白列與 # 開頭的列會略過。分隔符號接受逗號或分號。
     /// </summary>
     public static PlanetSpec[] ParseCsv(string text)
     {
@@ -60,6 +64,9 @@ public class PlanetSpec
                     orbitScale = c.Length > 7 && c[7].Trim().Length > 0
                         ? float.Parse(c[7].Trim(), NumberStyles.Float, inv) : 1f,
                     retrograde = c.Length > 8 && c[8].Trim() == "1",
+                    prefab = c.Length > 9 ? c[9].Trim() : "",
+                    rotationPeriod = c.Length > 10 && c[10].Trim().Length > 0
+                        ? double.Parse(c[10].Trim(), NumberStyles.Float, inv) : 0.0,
                 });
             }
             catch (System.FormatException)

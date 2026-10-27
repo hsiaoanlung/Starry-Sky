@@ -38,7 +38,7 @@ Material:
     - _RingInner: 1.1
     - _RingOuter: 2.4
     - _RingShadow: 0.85
-    - _RotationSpeed: 0.0035
+    - _RotationSpeed: 0
     m_Colors:
     - _AtmosphereColor: {r: 0.3, g: 0.27, b: 0.2, a: 1}
   m_BuildTextureStacks: []

@@ -62,8 +62,7 @@ public class CameraFocus : MonoBehaviour
             int d = 0;
             for (var p = b.parent; p != null; p = p.parent) d++;
             depth[b] = d;
-            var r = b.GetComponent<Renderer>();
-            colors[b] = r != null ? r.material.color : Color.white;
+            colors[b] = b.displayColor;   // 用 CSV 的顏色；Prefab 的 Shader（例如太陽）不一定有 _Color
         }
     }
 

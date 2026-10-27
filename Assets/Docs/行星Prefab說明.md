@@ -3,7 +3,7 @@
 最後更新：2026-10-26
 
 七顆行星的程序化貼圖與 Prefab。地球有自己的 Shader（雲、夜間燈光），見 [地球Prefab說明.md](地球Prefab說明.md)。
-目前**只做成 Prefab 試看**，還沒接進 N-body 模擬；衛星還沒做。
+2026-10-27 起已接進 N-body 模擬：`Planets.csv` 的 prefab 欄填 `Prefabs/Planets/<行星>`，按 Play 時自動載入（見 [Prefab載入說明.md](Prefab載入說明.md)）。衛星還沒做。
 
 基礎觀念見 [Shader與URP入門教學.md](Shader與URP入門教學.md)。
 
@@ -13,7 +13,7 @@
 
 | 類別 | 檔案 |
 | --- | --- |
-| Prefab | `Assets/Prefabs/{Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune}.prefab` |
+| Prefab | `Assets/Resources/Prefabs/Planets/{Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune}.prefab` |
 | 材質 | `Assets/Materials/<行星>.mat`，土星環另有 `SaturnRings.mat` |
 | 貼圖 | `Assets/Textures/<行星>/<行星>Albedo.png`（RGB 顏色、A 高度），`Saturn/SaturnRings.png` |
 | Shader | `Planet.shader`（七顆共用）、`PlanetRing.shader`（土星環）、`PlanetLighting.cginc`（光的方向） |
@@ -89,7 +89,7 @@ python Assets/Docs/planet_texture_gen.py --width 4096 Mars  # 更高解析度
 | 功能 | 參數 | 原理 |
 | --- | --- | --- |
 | 地形凹凸 | 地形凹凸強度 | 取左右、上下相鄰像素的高度差，把法線往下坡方向傾斜 → 隕石坑在晨昏線附近有明顯的陰影 |
-| 自轉 | 自轉（UV / 秒） | 整張貼圖沿經度捲動 |
+| 自轉 | 自轉（UV / 秒） | 整張貼圖沿經度捲動。**2026-10-27 起全部設為 0**，改由 `BodySpin` 轉整個物件（見 [自轉說明.md](自轉說明.md)） |
 | 雲帶流動 | 雲帶相對流動 | 不同緯度捲動速度不同（用 sin(緯度) 調整），雲帶會互相滑動 |
 | 臨邊昏暗 | 臨邊昏暗 | 顏色乘上 `pow(N·V, 值)`，氣態行星邊緣變暗 |
 | 大氣邊緣光 | 大氣顏色 / 邊緣寬度 | 和地球一樣的 Fresnel，顏色設黑色 = 關 |
@@ -116,19 +116,19 @@ N' = normalize( N − 強度 × (∂h/∂u · T + ∂h/∂v · B) )
 
 ## 4. Prefab 的設定
 
-| 行星 | 自轉軸傾角 | 自轉（UV/秒） | 其他 |
+| 行星 | 自轉軸傾角 | 自轉週期（CSV，天） | 其他 |
 | --- | --- | --- | --- |
-| 水星 | 0° | — | 凹凸 8 |
-| 金星 | 177.4°（上下顛倒 → 看起來是逆向自轉） | 0.003 | 黃色大氣 |
-| 火星 | 25.2° | — | 凹凸 5、淡紅大氣 |
-| 木星 | 3.1° | 0.004 | 雲帶流動、臨邊昏暗 |
-| 土星 | 26.7° | 0.0035 | 環 + 環的影子 |
-| 天王星 | 97.8°（躺著自轉） | 0.002 | 臨邊昏暗 |
-| 海王星 | 28.3° | 0.003 | 雲帶流動 |
+| 水星 | 0° | 58.646 | 凹凸 8 |
+| 金星 | 177.4°（上下顛倒 → 逆向自轉） | 243.025 | 黃色大氣 |
+| 火星 | 25.2° | 1.02596 | 凹凸 5、淡紅大氣 |
+| 木星 | 3.1° | 0.41354 | 雲帶流動、臨邊昏暗 |
+| 土星 | 26.7° | 0.44401 | 環 + 環的影子 |
+| 天王星 | 97.8°（躺著自轉） | 0.71833 | 臨邊昏暗 |
+| 海王星 | 28.3° | 0.67125 | 雲帶流動 |
 
 - 傾角做在 Prefab 根物件的 Rotation（繞 z 軸），環是子物件所以會跟著傾斜。
 - 所有行星直徑都是 1，大小之後接進模擬時再依 `displayRadius` 縮放。
-- 自轉速度只是「看起來在轉」，沒有照真實比例（真實比例在高播放速度下會快到看不清）。
+- 自轉軸 = 傾斜後根物件的 local y。2026-10-27 起由 `BodySpin` 照真實自轉週期轉（高速播放時有上限、比例不變），見 [自轉說明.md](自轉說明.md)。原本 Shader 的 UV 捲動（`_RotationSpeed`）已歸零。
 
 ---
 
@@ -137,4 +137,4 @@ N' = normalize( N − 強度 × (∂h/∂u · T + ∂h/∂v · B) )
 - 貼圖都是程序化產生的近似，不是真實地圖（可換 NASA / USGS 的公有領域貼圖，Shader 不用改）。
 - 凹凸用 8-bit 高度，非常近看可能有階梯感；可以改輸出 16-bit 高度或法線貼圖。
 - 天王星、海王星的環很暗，這次沒做。
-- 下一步：讓 `SolarSystemBuilder` 依 CSV 的名字載入對應的 Prefab，取代現在的單色球；衛星。
+- 下一步：衛星。（依 CSV 載入 Prefab 已在 2026-10-27 完成）

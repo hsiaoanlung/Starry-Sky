@@ -31,7 +31,7 @@ Material:
     m_Floats:
     - _BandShear: 0.0003
     - _LimbDarkening: 0.5
-    - _RotationSpeed: 0.003
+    - _RotationSpeed: 0
     m_Colors:
     - _AtmosphereColor: {r: 0.25, g: 0.4, b: 0.9, a: 1}
   m_BuildTextureStacks: []

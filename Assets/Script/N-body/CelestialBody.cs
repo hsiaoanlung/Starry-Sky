@@ -23,5 +23,8 @@ public class CelestialBody : MonoBehaviour
     [Tooltip("顯示時把與 parent 的距離放大幾倍（月球用），不影響物理")]
     public float orbitScale = 1f;
 
+    [Tooltip("CSV 的 color 欄，左側列表的文字顏色用；不影響物理")]
+    public Color displayColor = Color.white;
+
     [HideInInspector] public Vec3d acceleration;   // 由 NBodySimulator 填入
 }

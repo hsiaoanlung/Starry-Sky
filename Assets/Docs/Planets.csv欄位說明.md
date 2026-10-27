@@ -20,6 +20,8 @@
 | `color` | `#RRGGBB` | 是 | 僅顯示 | 球與軌跡顏色。無法解析時改用白色。 |
 | `orbitScale` | 倍數 | 否 | 僅顯示 | 顯示時把與 `parent` 的距離放大幾倍。留空 = 1。 |
 | `retrograde` | 0 / 1 | 否 | 初始條件 | 1 = 逆行，繞 `parent` 的方向與其他天體相反（例如海衛一 Triton）。留空 = 0。 |
+| `rotationPeriod` | 天 | 否 | 僅顯示 | 恆星自轉週期。正 = 繞自轉軸逆時針（和公轉同向），負 = 反向，留空 = 不自轉。見 [自轉說明.md](自轉說明.md)。 |
+| `prefab` | 路徑 | 否 | 僅顯示 | 外觀用的 Prefab，路徑從 Resources 開始、不含 `.prefab`，例如 `Prefabs/Planets/Earth`。留空 = 純色球。見 [Prefab載入說明.md](Prefab載入說明.md)。 |
 
 「影響」欄的意思：
 
@@ -66,17 +68,29 @@
 - 1：初始速度方向反過來（沿 -z），順時針公轉。
 - 目前只有海衛一 Triton 是逆行。它的真實軌道傾角約 157°，本模擬沒有軌道傾角，所以用「同平面、反方向」近似。
 
+### prefab
+
+- 只有 Resources 資料夾裡的 Prefab 讀得到：`Assets/Resources/Prefabs/Sun.prefab` → 填 `Prefabs/Sun`。
+- 讀不到時 Console 會出現警告，那顆天體改用純色球，模擬照常進行。
+- 目前太陽與八大行星有填；衛星留空。
+
+### rotationPeriod
+
+- 填**恆星自轉週期**（相對遙遠恆星轉一圈），單位是天。地球是 0.99727，不是 1。
+- 金星、天王星的逆向 / 躺著自轉已經由 Prefab 的傾角表現，這裡照樣填正數。
+- 播放速度很快時，自轉會被限制在每真實秒最多 1 天份（`SolarSystemBuilder > Max Spin Days Per Second`），比例不變。
+
 ---
 
 ## 範例
 
 ```
-name,parent,mass,a,e,displayRadius,color,orbitScale,retrograde
-Sun,,1,0,0,0.6,#FFD933,1,0
-Earth,Sun,3.00E-06,1,0.0167,0.15,#4D80FF,1,0
-Moon,Earth,3.69E-08,0.00257,0.0549,0.05,#CCCCCC,25,0
-Neptune,Sun,5.15E-05,30.11,0.0113,0.24,#4D66E6,1,0
-Triton,Neptune,1.075E-08,2.37142E-03,0.000016,0.05,#D8C8C0,25,1
+name,parent,mass,a,e,displayRadius,color,orbitScale,retrograde,prefab,rotationPeriod
+Sun,,1,0,0,0.6,#FFD933,1,0,Prefabs/Sun,25.38
+Earth,Sun,3.00E-06,1,0.0167,0.15,#4D80FF,1,0,Prefabs/Planets/Earth,0.99727
+Moon,Earth,3.69E-08,0.00257,0.0549,0.05,#CCCCCC,25,0,,
+Neptune,Sun,5.15E-05,30.11,0.0113,0.24,#4D66E6,1,0,Prefabs/Planets/Neptune,0.67125
+Triton,Neptune,1.075E-08,2.37142E-03,0.000016,0.05,#D8C8C0,25,1,,
 ```
 
 目前表格收錄的天體：太陽、八大行星，以及月球、火衛一二、木星伽利略衛星 4 顆、土星大衛星 7 顆、天王星大衛星 5 顆、海衛一，共 29 顆。

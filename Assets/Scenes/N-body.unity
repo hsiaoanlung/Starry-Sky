@@ -152,58 +152,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SolarSystemBuilder
   simulator: {fileID: 0}
-  sunDisplayRadius: 0.6
-  planets:
-  - name: Mercury
-    mass: 0.000000166
-    a: 0.3871
-    e: 0.2056
-    displayRadius: 0.08
-    color: {r: 0.7, g: 0.7, b: 0.7, a: 1}
-  - name: Venus
-    mass: 0.00000245
-    a: 0.7233
-    e: 0.0068
-    displayRadius: 0.14
-    color: {r: 0.9, g: 0.8, b: 0.5, a: 1}
-  - name: Earth
-    mass: 0.000003
-    a: 1
-    e: 0.0167
-    displayRadius: 0.15
-    color: {r: 0.3, g: 0.5, b: 1, a: 1}
-  - name: Mars
-    mass: 0.000000323
-    a: 1.5237
-    e: 0.0934
-    displayRadius: 0.1
-    color: {r: 1, g: 0.4, b: 0.2, a: 1}
-  - name: Jupiter
-    mass: 0.000955
-    a: 5.2026
-    e: 0.0489
-    displayRadius: 0.4
-    color: {r: 0.9, g: 0.7, b: 0.5, a: 1}
-  - name: Saturn
-    mass: 0.000286
-    a: 9.5549
-    e: 0.0565
-    displayRadius: 0.35
-    color: {r: 0.9, g: 0.85, b: 0.6, a: 1}
-  - name: Uranus
-    mass: 0.0000437
-    a: 19.218
-    e: 0.0457
-    displayRadius: 0.25
-    color: {r: 0.6, g: 0.9, b: 0.9, a: 1}
-  - name: Neptune
-    mass: 0.0000515
-    a: 30.11
-    e: 0.0113
-    displayRadius: 0.24
-    color: {r: 0.3, g: 0.4, b: 0.9, a: 1}
+  planetTable: {fileID: 0}
+  sunVisual: 1
   addTrails: 1
-  trailSeconds: 20
+  trailOrbitFraction: 0.3
 --- !u!114 &531619091
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -223,33 +175,6 @@ MonoBehaviour:
   softening: 0
   logEveryDays: 100
   bodies: []
---- !u!114 &531619093
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 531619089}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0a5a38f87b02427e817b41db39ca5ed7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TimeControlUI
-  simulator: {fileID: 531619091}
---- !u!114 &531619094
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 531619089}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6dfdac0c93d545ff8a740393680e193b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CameraFocus
-  simulator: {fileID: 531619091}
-  cam: {fileID: 1932602201}
 --- !u!4 &531619092
 Transform:
   m_ObjectHideFlags: 0
@@ -265,6 +190,51 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &531619093
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 531619089}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a5a38f87b02427e817b41db39ca5ed7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TimeControlUI
+  simulator: {fileID: 531619091}
+  presets:
+  - 0.1
+  - 1
+  - 5
+  - 30
+  - 100
+  - 365
+  minDaysPerSecond: 0.01
+  maxDaysPerSecond: 1000
+  showHelp: 1
+  fontSize: 16
+--- !u!114 &531619094
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 531619089}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6dfdac0c93d545ff8a740393680e193b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CameraFocus
+  simulator: {fileID: 531619091}
+  cam: {fileID: 1932602201}
+  framingMargin: 1.4
+  radiusMultiplier: 6
+  transitionTime: 0.8
+  zoomStep: 1.25
+  pickRadiusPixels: 25
+  fontSize: 15
+  panelWidth: 190
 --- !u!1 &1793769081
 GameObject:
   m_ObjectHideFlags: 0

@@ -35,4 +35,20 @@ float sunFbm(float3 p)
     return sum / 0.96875;
 }
 
+// 可指定層數的 fBm（體積日冕每個像素要取樣很多次，用較少層數省效能），回傳約 0~1
+float sunFbmOct(float3 p, int octaves)
+{
+    float sum = 0.0;
+    float amp = 0.5;
+    float norm = 0.0;
+    for (int k = 0; k < octaves; k++)
+    {
+        sum += amp * sunNoise(p);
+        norm += amp;
+        p = p * 2.03 + float3(1.7, 9.2, 3.1);
+        amp *= 0.5;
+    }
+    return sum / norm;
+}
+
 #endif

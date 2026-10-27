@@ -51,6 +51,7 @@ description: Starry Sky（Unity 太陽系 N-body 專案）新增或修改功能�
 ### Unity 資產（材質、Prefab、貼圖 .meta）
 - 可以直接寫 YAML，**自己產生 GUID** 讓檔案互相引用；每個檔案都要有 `.meta`。
 - 球體網格：`{fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}`；Quad：`10210`。
+- 天體 Prefab 放 `Assets/Resources/Prefabs/`（行星在 `Planets/`），根物件直徑 1、不要 Collider；在 `Planets.csv` 的 `prefab` 欄填路徑（不含 Assets/Resources/ 和副檔名），`SolarSystemBuilder` 會用 `Resources.Load` 自動載入。搬資產時 `.meta` 一起搬（GUID 不變）。
 - 貼圖 meta：球面貼圖 `wrapU: 0`（Repeat）、`wrapV: 1`（Clamp）；A 通道存資料（高度）時用高品質壓縮。
 - 寫資產用的一次性腳本放 scratchpad，不要放進專案。
 
@@ -92,6 +93,9 @@ Claude 不能打開 Unity，所以要盡量在外面確認，並**誠實說明�
 | 功能 | 程式 / Shader | 文件 |
 | --- | --- | --- |
 | 太陽電漿 + 日冕 + Bloom | `SunVisual.cs`、`SunSurface.shader`、`SunCorona.shader` | `太陽視覺效果說明.md` |
+| 太陽 Prefab + 體積日冕 | `Sun.prefab`、`SunCorona.shader`（ray marching）、`sun_corona_preview.py` | `太陽Prefab說明.md` |
+| 自轉 | `BodySpin.cs`（模擬時間 + 上限） | `自轉說明.md` |
+| CSV 指定 Prefab | `PlanetSpec.cs`、`SolarSystemBuilder.LoadPrefab()` | `Prefab載入說明.md` |
 | 地球 Prefab | `Earth.shader`、`earth_texture_gen.py` | `地球Prefab說明.md` |
 | 其他七顆行星 Prefab | `Planet.shader`、`PlanetRing.shader`、`planet_texture_gen.py` | `行星Prefab說明.md` |
 | 觀念教學 | — | `Shader與URP入門教學.md` |
