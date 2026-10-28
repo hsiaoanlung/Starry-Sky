@@ -62,6 +62,9 @@ public class CameraFocus : MonoBehaviour
     public float panelWidth = 190f;
 
     CelestialBody target;               // null = 初始視角
+
+    /// <summary>目前跟隨的天體；null = 初始視角（TrailVisual 用它決定「目前系統」）。</summary>
+    public CelestialBody Target => target;
     ViewMode view = ViewMode.Top;
     float yawOffset, pitchOffset;       // 右鍵拖曳累積的角度，切換視角時歸零
     float baseHeight;                   // 自動算出的相機距離

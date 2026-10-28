@@ -43,6 +43,11 @@ public class SolarSystemBuilder : MonoBehaviour
     [Tooltip("軌跡長度 = 公轉週期的幾分之幾。0.3 = 顯示 0.3 圈；1 = 剛好一整圈")]
     [Range(0.05f, 1f)] public float trailOrbitFraction = 0.3f;
 
+    [Tooltip("發光細線（TrailVisual）：固定像素寬度、加法混合不擋住行星、T 鍵切換顯示模式。取消勾選 = 原本的實心線")]
+    public bool trailVisual = true;
+
+    TrailVisual trailVisuals;
+
     // 每條軌跡與其天體的公轉週期（天），Update 時依播放速度換算成 TrailRenderer.time
     readonly List<(TrailRenderer trail, double periodDays)> trails = new List<(TrailRenderer, double)>();
 
@@ -51,6 +56,7 @@ public class SolarSystemBuilder : MonoBehaviour
         if (simulator == null) simulator = GetComponent<NBodySimulator>();
         if (spaceEnvironment) gameObject.AddComponent<SpaceEnvironment>();   // 黑色背景 + 關掉 Directional Light
         if (plainBodyMaterial == null) plainBodyMaterial = Resources.Load<Material>("Materials/SimpleBody");
+        if (addTrails && trailVisual) trailVisuals = gameObject.AddComponent<TrailVisual>();   // 軌跡外觀：細線、發光、顯示模式
 
         if (planetTable == null) planetTable = Resources.Load<TextAsset>("Planets");
         if (planetTable == null)
@@ -144,15 +150,27 @@ public class SolarSystemBuilder : MonoBehaviour
         go.name = name;
         go.transform.localScale = Vector3.one * radius * 2f;   // Prefab 的子物件（日冕、土星環）跟著等比例縮放
 
+        TrailRenderer trail = null;
+        bool glowTrail = false;
         if (addTrails && periodDays > 0)
         {
-            var trail = go.AddComponent<TrailRenderer>();
+            trail = go.AddComponent<TrailRenderer>();
             trail.minVertexDistance = radius * 0.5f;   // 小星（月球）軌跡更細緻，大星省頂點
-            trail.startWidth = radius * 0.5f;
-            trail.endWidth = 0f;
-            trail.material = new Material(Shader.Find("Sprites/Default"));
-            trail.startColor = color;
-            trail.endColor = new Color(color.r, color.g, color.b, 0f);
+            var glow = trailVisuals != null ? trailVisuals.Material : null;
+            if (glow != null)
+            {
+                glowTrail = true;
+                trail.sharedMaterial = glow;           // 共用一份；寬度與顏色由 TrailVisual 每幀設定（Register 在下面）
+            }
+            else
+            {
+                // 原本的實心線：寬度跟著星球大小、尾端淡出
+                trail.startWidth = radius * 0.5f;
+                trail.endWidth = 0f;
+                trail.material = new Material(Shader.Find("Sprites/Default"));
+                trail.startColor = color;
+                trail.endColor = new Color(color.r, color.g, color.b, 0f);
+            }
             trails.Add((trail, periodDays));
         }
 
@@ -172,6 +190,7 @@ public class SolarSystemBuilder : MonoBehaviour
         body.parent = parent;
         body.orbitScale = spec.orbitScale;
         body.displayColor = color;
+        if (glowTrail) trailVisuals.Register(trail, body, color);
 
         simulator.bodies.Add(body);
         return body;

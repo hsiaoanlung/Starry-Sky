@@ -112,7 +112,10 @@ trail.emitting = true;
 
 ## 5. 本專案的用法
 
-`SolarSystemBuilder.Create()` 在建立每顆天體時加上 TrailRenderer：
+`SolarSystemBuilder.Create()` 在建立每顆天體時加上 TrailRenderer。
+
+> 2026-10-28 起，預設由 `TrailVisual` 接手外觀：固定像素寬度、加法混合的發光細線、`T` 鍵切換顯示模式，見第 8 節與 [軌跡外觀說明.md](軌跡外觀說明.md)。
+> 下面是**原本的實心線**寫法，把 Solar System Builder 的 **Trail Visual** 取消勾選時仍會使用。
 
 ```csharp
 var trail = go.AddComponent<TrailRenderer>();
@@ -206,12 +209,12 @@ trail.material = new Material(Shader.Find("Universal Render Pipeline/Particles/U
 
 `Shader.Find()` 只找得到**有被打包進遊戲**的 Shader。若某個 Shader 沒被任何材質引用，打包時可能被剔除。解法擇一：
 
-- 在 Project 視窗建立一個 Material 資產，指定給 Builder 的欄位，而不是用 `Shader.Find()`。
+- 在 Project 視窗建立一個 Material 資產，指定給 Builder 的欄位，而不是用 `Shader.Find()`。本專案的發光線材質放在 `Resources/Materials/Trail.mat`，用 `Resources.Load` 讀取，就是這個做法。
 - 到 **Project Settings → Graphics → Always Included Shaders** 加入該 Shader。
 
-### 遠看時軌跡太細看不見
+### 遠看時軌跡太細、近看時太粗
 
-`width` 是**世界單位**，相機拉遠後線會變細。可以把 `widthMultiplier` 調大，或依相機距離動態調整。
+`width` 是**世界單位**，相機拉遠後線會變細、拉近會變粗。可以依相機距離動態調整 `widthMultiplier`，本專案的 `TrailVisual` 就是這樣做，見第 8.1 節。
 
 ### 軌跡頂點太多、變慢
 
@@ -231,3 +234,51 @@ TrailRenderer 只能畫「走過的路」。若要一開始就顯示整圈橢圓
 | 會隨時間消失 | 會 | 不會 |
 | 適合 | 移動尾跡、動態路徑 | 固定軌道、雷射、連線 |
 | 物體瞬移 | 會拉直線，要 `Clear()` | 不受影響 |
+
+---
+
+## 8. 進階：固定像素寬度的發光線（本專案的 TrailVisual）
+
+### 8.1 讓線在螢幕上永遠一樣粗
+
+透視相機在距離 $d$ 的地方，畫面高度是 $2d	an(	ext{FOV}/2)$ 個世界單位，被分成 `Screen.height` 個像素。所以要 $p$ 像素寬：
+
+```csharp
+float pixelAtUnitDistance = 2f * Mathf.Tan(cam.fieldOfView * 0.5f * Mathf.Deg2Rad) / Screen.height;
+float depth = Vector3.Dot(transform.position - cam.transform.position, cam.transform.forward);   // 沿視線的深度
+trail.startWidth = 1f;                                       // 寬度曲線維持「1 → 尾端比例」
+trail.widthMultiplier = p * pixelAtUnitDistance * depth;     // 每幀更新
+```
+
+要在相機移動**之後**才算，否則會慢一幀：放在 `LateUpdate`，並用 `[DefaultExecutionOrder(100)]` 讓它比移動相機的腳本晚執行。
+
+### 8.2 用頂點顏色傳資料給 Shader
+
+TrailRenderer 會把 `colorGradient` 內插到每個頂點，Shader 用 `COLOR` 語意讀到。顏色不一定只能是「顏色」：
+加法混合用不到 alpha，所以把 alpha 設成「頭 1 → 尾 0」，Shader 就知道每個像素在軌跡上的位置，可以自己決定淡入淡出的曲線。
+
+```csharp
+var g = new Gradient();
+g.SetKeys(
+    new[] { new GradientColorKey(color, 0f), new GradientColorKey(color, 1f) },
+    new[] { new GradientAlphaKey(1f, 0f), new GradientAlphaKey(0f, 1f) });
+trail.colorGradient = g;   // Gradient 每次 new 都會配置記憶體，只在需要時才重設
+```
+
+### 8.3 隱藏但不中斷
+
+| 做法 | 還會記錄位置嗎 | 重新顯示時 |
+| --- | --- | --- |
+| `trail.enabled = false` | 不會 | 從舊位置拉一條直線到現在的位置 |
+| `trail.emitting = false` | 不會記新點，舊的照常消失 | 中間有一段空白 |
+| `trail.forceRenderingOff = true` | **會** | 軌跡完整，好像從來沒隱藏過 |
+
+`forceRenderingOff` 是所有 Renderer 都有的屬性：元件照常運作，只是這一幀不畫。
+
+### 8.4 自己動手試試
+
+1. Play 中選 Simulator，把 **Trail Visual > Width Pixels** 從 1.5 拉到 6，再拉近、拉遠，觀察線在螢幕上的粗細有沒有變。
+2. 把 **Intensity** 拉到 2，切到「全部」模式，看衛星的線疊在一起的地方是不是開始發光（Bloom）。這就是加法混合「越疊越亮」的特性。
+3. 把 **Head Fade** 拉到 0.3、**Tail Power** 拉到 4，軌跡會變成只剩中間一小段亮，像流星。
+4. 停止 Play，把 Solar System Builder 的 **Trail Visual** 取消勾選後再 Play，跟隨地球，比較原本的實心帶子。
+5. 在 `TrailVisual.ApplyColor()` 把 `GradientAlphaKey(0f, 1f)` 改成 `GradientAlphaKey(0.5f, 1f)`，猜猜看尾巴會變怎樣？（提示：Shader 算出的 t 最大只到 0.5）
