@@ -29,6 +29,10 @@ public class SolarSystemBuilder : MonoBehaviour
     [Tooltip("沒有 Prefab 的天體（衛星）用的材質，光從太陽來。留空 = 讀 Resources/Materials/SimpleBody")]
     public Material plainBodyMaterial;
 
+    [Header("聲音")]
+    [Tooltip("背景音樂（SpaceAudio）：循環播放程序合成的太空氛圍音樂，M 鍵靜音")]
+    public bool backgroundMusic = true;
+
     [Header("自轉")]
     [Tooltip("依 CSV 的 rotationPeriod 欄讓天體自轉（BodySpin）。Play 中可即時開關")]
     public bool addSpin = true;
@@ -55,6 +59,7 @@ public class SolarSystemBuilder : MonoBehaviour
     {
         if (simulator == null) simulator = GetComponent<NBodySimulator>();
         if (spaceEnvironment) gameObject.AddComponent<SpaceEnvironment>();   // 黑色背景 + 關掉 Directional Light
+        if (backgroundMusic) gameObject.AddComponent<SpaceAudio>();          // 背景音樂
         if (plainBodyMaterial == null) plainBodyMaterial = Resources.Load<Material>("Materials/SimpleBody");
         if (addTrails && trailVisual) trailVisuals = gameObject.AddComponent<TrailVisual>();   // 軌跡外觀：細線、發光、顯示模式
 

@@ -109,6 +109,7 @@ public class TimeControlUI : MonoBehaviour
                 $"<b>1</b>~<b>{System.Math.Min(6, presets.Length)}</b>　　預設速度 {string.Join(" / ", System.Array.ConvertAll(presets, FormatSpeed))}\n" +
                 "<b>空白鍵</b>　暫停 / 繼續\n" +
                 "<b>T</b>　　 軌跡顯示模式\n" +
+                "<b>M</b>　　 背景音樂開 / 關\n" +
                 "<b>H</b>　　 隱藏說明";
         else
             text += "\n<color=#A0A0A0>按 H 顯示按鍵說明</color>";
