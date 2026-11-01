@@ -174,7 +174,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NBodySimulator
   dt: 0.001
-  daysPerSecond: 30
+  daysPerSecond: 1
   maxStepsPerFrame: 2000
   unityUnitsPerAU: 10
   softening: 0

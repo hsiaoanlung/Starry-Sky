@@ -14,7 +14,7 @@ public class SpaceAudio : MonoBehaviour
     public AudioClip clip;
 
     [Tooltip("音量（0 = 無聲，1 = 原始音量）。背景音樂通常 0.2 ~ 0.5 就夠")]
-    [Range(0f, 1f)] public float volume = 0.35f;
+    [Range(0f, 1f)] public float volume = 0.2f;
 
     [Tooltip("靜音（M 鍵切換）")]
     public bool muted = false;

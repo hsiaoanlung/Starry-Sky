@@ -33,6 +33,9 @@ public class SolarSystemBuilder : MonoBehaviour
     [Tooltip("背景音樂（SpaceAudio）：循環播放程序合成的太空氛圍音樂，M 鍵靜音")]
     public bool backgroundMusic = true;
 
+    [Tooltip("行星之歌（PlanetSong）：每顆行星一個音，音高由繞太陽的角速度決定，離相機近的比較大聲，P 鍵開關")]
+    public bool planetSong = true;
+
     [Header("自轉")]
     [Tooltip("依 CSV 的 rotationPeriod 欄讓天體自轉（BodySpin）。Play 中可即時開關")]
     public bool addSpin = true;
@@ -107,11 +110,20 @@ public class SolarSystemBuilder : MonoBehaviour
 
         simulator.RemoveCenterOfMassDrift();   // 總動量歸零（第 6.4 節）
         simulator.Initialize();
+        if (planetSong) AddPlanetSong();
         UpdateTrailTimes();
         foreach (var t in trails) t.trail.Clear();   // 清掉從原點拉到初始位置的那一段
     }
 
     void Update() => UpdateTrailTimes();
+
+    /// <summary>行星之歌放在子物件上：它要用自己的 AudioSource（OnAudioFilterRead 會套用到同一物件上的 AudioSource），不能和背景音樂共用。</summary>
+    void AddPlanetSong()
+    {
+        var go = new GameObject("Planet Song");
+        go.transform.SetParent(transform, false);
+        go.AddComponent<PlanetSong>().simulator = simulator;   // RequireComponent 會先自動加上 AudioSource
+    }
 
     /// <summary>軌跡秒數 = 週期(天) × 比例 ÷ 每秒模擬天數。每幀更新，執行中調整播放速度或比例也會立刻反映。</summary>
     void UpdateTrailTimes()

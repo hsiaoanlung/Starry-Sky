@@ -14,8 +14,8 @@ public class NBodySimulator : MonoBehaviour
     [Tooltip("每一步積分推進多少模擬天。決定精度，水星需要 <= 1，月球需要 <= 0.05。")]
     public double dt = 0.25;
 
-    [Tooltip("每秒真實時間推進多少模擬天。決定播放速度。")]
-    public double daysPerSecond = 30;
+    [Tooltip("每秒真實時間推進多少模擬天。決定播放速度。預設 1 = 數字鍵 2 的速度")]
+    public double daysPerSecond = 1;
 
     [Tooltip("單一幀最多跑幾步，避免掉幀時雪崩。超過時本幀剩下的時間直接捨棄，模擬會比設定的速度慢。")]
     public int maxStepsPerFrame = 2000;

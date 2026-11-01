@@ -166,7 +166,7 @@ void UpdateTrailTimes()
 
 `UpdateTrailTimes()` 每幀呼叫一次，所以在執行中調整 Simulator 的 **Days Per Second** 或 Builder 的 **Trail Orbit Fraction**，軌跡長度會立刻跟著變。
 
-預設 `trailOrbitFraction = 0.3`、`daysPerSecond = 30` 時：
+`trailOrbitFraction = 0.3`、`daysPerSecond = 30`（數字鍵 `4`；目前預設是 1 天/秒，秒數要再 × 30）時：
 
 | 天體 | 週期（天） | trail.time（秒） |
 | --- | --- | --- |
