@@ -157,10 +157,13 @@ MonoBehaviour:
   sunVisual: 1
   spaceEnvironment: 1
   plainBodyMaterial: {fileID: 0}
+  backgroundMusic: 1
+  planetSong: 0
   addSpin: 1
   maxSpinDaysPerSecond: 1
   addTrails: 1
   trailOrbitFraction: 0.3
+  trailVisual: 1
 --- !u!114 &531619091
 MonoBehaviour:
   m_ObjectHideFlags: 0

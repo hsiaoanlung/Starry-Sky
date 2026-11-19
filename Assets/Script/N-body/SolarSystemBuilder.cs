@@ -191,7 +191,12 @@ public class SolarSystemBuilder : MonoBehaviour
             trails.Add((trail, periodDays));
         }
 
-        if (spec.rotationPeriod != 0)
+        if (spec.tidalLock && parent != null)
+        {
+            var lockComp = go.AddComponent<TidalLock>();   // 永遠同一面朝向 parent（body 在下面建立後再指定）
+            lockComp.builder = this;
+        }
+        else if (spec.rotationPeriod != 0)
         {
             var spin = go.AddComponent<BodySpin>();   // 繞 local y（Prefab 的自轉軸）轉
             spin.rotationPeriodDays = spec.rotationPeriod;
@@ -208,6 +213,8 @@ public class SolarSystemBuilder : MonoBehaviour
         body.orbitScale = spec.orbitScale;
         body.displayColor = color;
         if (glowTrail) trailVisuals.Register(trail, body, color);
+        var tidal = go.GetComponent<TidalLock>();
+        if (tidal != null) tidal.body = body;
 
         simulator.bodies.Add(body);
         return body;

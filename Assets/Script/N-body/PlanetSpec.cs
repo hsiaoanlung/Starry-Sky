@@ -19,11 +19,12 @@ public class PlanetSpec
     public bool retrograde;      // 逆行：繞 parent 的方向與其他天體相反（例如海衛一 Triton）
     public string prefab;        // Prefab 在 Resources 底下的路徑（不含副檔名），例如 Prefabs/Planets/Earth；空白 = 純色球
     public double rotationPeriod; // 恆星自轉週期（天），純顯示用；正 = 繞自轉軸逆時針，負 = 反向，0 = 不自轉
+    public bool tidalLock;       // rotationPeriod 欄填 lock：潮汐鎖定，永遠同一面朝向 parent（TidalLock 元件）
 
     /// <summary>
     /// 解析 CSV。第一列是標題：name,parent,mass,a,e,displayRadius,color,orbitScale,retrograde,prefab,rotationPeriod。
     /// color 用 #RRGGBB；orbitScale 可省略（預設 1）；retrograde 可省略（預設 0，填 1 = 逆行）；prefab 可省略（空白 = 純色球）；
-    /// rotationPeriod 可省略（預設 0 = 不自轉）。
+    /// rotationPeriod 可省略（預設 0 = 不自轉），填 lock = 潮汐鎖定。
     /// 空白列與 # 開頭的列會略過。分隔符號接受逗號或分號。
     /// </summary>
     public static PlanetSpec[] ParseCsv(string text)
@@ -51,6 +52,7 @@ public class PlanetSpec
                     Debug.LogWarning($"[Planets.csv] 第 {i + 1} 列顏色無法解析：{c[6]}，改用白色");
                     color = Color.white;
                 }
+                string rotation = c.Length > 10 ? c[10].Trim() : "";
 
                 result.Add(new PlanetSpec
                 {
@@ -65,8 +67,9 @@ public class PlanetSpec
                         ? float.Parse(c[7].Trim(), NumberStyles.Float, inv) : 1f,
                     retrograde = c.Length > 8 && c[8].Trim() == "1",
                     prefab = c.Length > 9 ? c[9].Trim() : "",
-                    rotationPeriod = c.Length > 10 && c[10].Trim().Length > 0
-                        ? double.Parse(c[10].Trim(), NumberStyles.Float, inv) : 0.0,
+                    tidalLock = rotation.Equals("lock", System.StringComparison.OrdinalIgnoreCase),
+                    rotationPeriod = rotation.Length > 0 && !rotation.Equals("lock", System.StringComparison.OrdinalIgnoreCase)
+                        ? double.Parse(rotation, NumberStyles.Float, inv) : 0.0,
                 });
             }
             catch (System.FormatException)
