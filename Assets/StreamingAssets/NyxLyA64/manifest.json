@@ -1,0 +1,240 @@
+{
+  "format_version": 1,
+  "source": "Nyx LyA",
+  "box_size_mpc": 28.49002849,
+  "box_size_mpc_h": 20.0,
+  "grid": [
+    64,
+    64,
+    64
+  ],
+  "volume_format": "float16 little-endian, x fastest then y then z, normalised to [0,1]; physical = min + v * (max - min)",
+  "particle_format": "float32 little-endian xyz per particle; positions in box units [0,1), velocities in km/s; sorted by particle id (same index = same particle)",
+  "num_particles": 262144,
+  "particle_stride": 1,
+  "cosmology": {
+    "omega_m": 0.275,
+    "omega_b": 0.046,
+    "h": 0.702
+  },
+  "volume_fields": [
+    {
+      "name": "gas_density",
+      "description": "Baryonic gas overdensity",
+      "transform": "log10(rho_gas / mean(rho_gas))",
+      "unit": "log10 overdensity",
+      "min": -1.0407151429836785,
+      "max": 2.477125954474917
+    },
+    {
+      "name": "dm_density",
+      "description": "Dark matter overdensity (CIC-deposited particles)",
+      "transform": "log10(max(rho_dm, floor) / mean(rho_dm))",
+      "unit": "log10 overdensity",
+      "min": -3.0,
+      "max": 2.617901086290088
+    },
+    {
+      "name": "temperature",
+      "description": "Gas temperature",
+      "transform": "log10(T / K)",
+      "unit": "log10 K",
+      "min": 0.0,
+      "max": 6.884064289731438
+    }
+  ],
+  "snapshots": [
+    {
+      "index": 0,
+      "plotfile": "plt00115",
+      "step": 115,
+      "z": 49.999508,
+      "a": 0.0196080323043102,
+      "age_gyr": 0.048618,
+      "particle_positions": "particles/snap00_pos.bytes",
+      "particle_velocities": "particles/snap00_vel.bytes",
+      "particle_speed_max": 94.07133711933649,
+      "volume_files": [
+        "volume/snap00_gas_density.bytes",
+        "volume/snap00_dm_density.bytes",
+        "volume/snap00_temperature.bytes"
+      ]
+    },
+    {
+      "index": 1,
+      "plotfile": "plt00166",
+      "step": 166,
+      "z": 29.999699,
+      "a": 0.0322583777800243,
+      "age_gyr": 0.102591,
+      "particle_positions": "particles/snap01_pos.bytes",
+      "particle_velocities": "particles/snap01_vel.bytes",
+      "particle_speed_max": 120.78638796227528,
+      "volume_files": [
+        "volume/snap01_gas_density.bytes",
+        "volume/snap01_dm_density.bytes",
+        "volume/snap01_temperature.bytes"
+      ]
+    },
+    {
+      "index": 2,
+      "plotfile": "plt00206",
+      "step": 206,
+      "z": 19.999796,
+      "a": 0.0476195097073034,
+      "age_gyr": 0.183996,
+      "particle_positions": "particles/snap02_pos.bytes",
+      "particle_velocities": "particles/snap02_vel.bytes",
+      "particle_speed_max": 149.79375231264711,
+      "volume_files": [
+        "volume/snap02_gas_density.bytes",
+        "volume/snap02_dm_density.bytes",
+        "volume/snap02_temperature.bytes"
+      ]
+    },
+    {
+      "index": 3,
+      "plotfile": "plt00234",
+      "step": 234,
+      "z": 14.999845,
+      "a": 0.0625006056951979,
+      "age_gyr": 0.276651,
+      "particle_positions": "particles/snap03_pos.bytes",
+      "particle_velocities": "particles/snap03_vel.bytes",
+      "particle_speed_max": 175.68797215391552,
+      "volume_files": [
+        "volume/snap03_gas_density.bytes",
+        "volume/snap03_dm_density.bytes",
+        "volume/snap03_temperature.bytes"
+      ]
+    },
+    {
+      "index": 4,
+      "plotfile": "plt00272",
+      "step": 272,
+      "z": 9.999894,
+      "a": 0.0909099698747203,
+      "age_gyr": 0.485206,
+      "particle_positions": "particles/snap04_pos.bytes",
+      "particle_velocities": "particles/snap04_vel.bytes",
+      "particle_speed_max": 224.41894969585726,
+      "volume_files": [
+        "volume/snap04_gas_density.bytes",
+        "volume/snap04_dm_density.bytes",
+        "volume/snap04_temperature.bytes"
+      ]
+    },
+    {
+      "index": 5,
+      "plotfile": "plt00293",
+      "step": 293,
+      "z": 7.999913,
+      "a": 0.111112189061613,
+      "age_gyr": 0.65544,
+      "particle_positions": "particles/snap05_pos.bytes",
+      "particle_velocities": "particles/snap05_vel.bytes",
+      "particle_speed_max": 261.25286572900797,
+      "volume_files": [
+        "volume/snap05_gas_density.bytes",
+        "volume/snap05_dm_density.bytes",
+        "volume/snap05_temperature.bytes"
+      ]
+    },
+    {
+      "index": 6,
+      "plotfile": "plt00305",
+      "step": 305,
+      "z": 6.999923,
+      "a": 0.125001206722493,
+      "age_gyr": 0.7819,
+      "particle_positions": "particles/snap06_pos.bytes",
+      "particle_velocities": "particles/snap06_vel.bytes",
+      "particle_speed_max": 289.05014230247184,
+      "volume_files": [
+        "volume/snap06_gas_density.bytes",
+        "volume/snap06_dm_density.bytes",
+        "volume/snap06_temperature.bytes"
+      ]
+    },
+    {
+      "index": 7,
+      "plotfile": "plt00319",
+      "step": 319,
+      "z": 5.999932,
+      "a": 0.142858526229039,
+      "age_gyr": 0.954897,
+      "particle_positions": "particles/snap07_pos.bytes",
+      "particle_velocities": "particles/snap07_vel.bytes",
+      "particle_speed_max": 329.171000828236,
+      "volume_files": [
+        "volume/snap07_gas_density.bytes",
+        "volume/snap07_dm_density.bytes",
+        "volume/snap07_temperature.bytes"
+      ]
+    },
+    {
+      "index": 8,
+      "plotfile": "plt00335",
+      "step": 335,
+      "z": 4.999942,
+      "a": 0.166668279614684,
+      "age_gyr": 1.202408,
+      "particle_positions": "particles/snap08_pos.bytes",
+      "particle_velocities": "particles/snap08_vel.bytes",
+      "particle_speed_max": 396.87567463179226,
+      "volume_files": [
+        "volume/snap08_gas_density.bytes",
+        "volume/snap08_dm_density.bytes",
+        "volume/snap08_temperature.bytes"
+      ]
+    },
+    {
+      "index": 9,
+      "plotfile": "plt00354",
+      "step": 354,
+      "z": 3.999952,
+      "a": 0.200001931598243,
+      "age_gyr": 1.578295,
+      "particle_positions": "particles/snap09_pos.bytes",
+      "particle_velocities": "particles/snap09_vel.bytes",
+      "particle_speed_max": 515.5315738053306,
+      "volume_files": [
+        "volume/snap09_gas_density.bytes",
+        "volume/snap09_dm_density.bytes",
+        "volume/snap09_temperature.bytes"
+      ]
+    },
+    {
+      "index": 10,
+      "plotfile": "plt00377",
+      "step": 377,
+      "z": 2.999962,
+      "a": 0.250002404314726,
+      "age_gyr": 2.19852,
+      "particle_positions": "particles/snap10_pos.bytes",
+      "particle_velocities": "particles/snap10_vel.bytes",
+      "particle_speed_max": 717.409563396833,
+      "volume_files": [
+        "volume/snap10_gas_density.bytes",
+        "volume/snap10_dm_density.bytes",
+        "volume/snap10_temperature.bytes"
+      ]
+    },
+    {
+      "index": 11,
+      "plotfile": "plt00407",
+      "step": 407,
+      "z": 2.0,
+      "a": 0.333333333334849,
+      "age_gyr": 3.354614,
+      "particle_positions": "particles/snap11_pos.bytes",
+      "particle_velocities": "particles/snap11_vel.bytes",
+      "particle_speed_max": 848.9998120113552,
+      "volume_files": [
+        "volume/snap11_gas_density.bytes",
+        "volume/snap11_dm_density.bytes",
+        "volume/snap11_temperature.bytes"
+      ]
+    }
+  ]
+}
